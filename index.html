@@ -19,6 +19,7 @@
             align-items: center;
             min-height: 100vh;
             padding: 10px;
+            flex-direction: column;
         }
 
         .cocktail-container {
@@ -108,7 +109,7 @@
 
         .tools img {
             display: none;
-            max-width: 80px;
+            max-width: 150px; /* Smaller image size */
             border-radius: 8px;
             margin-top: 5px;
             transition: opacity 0.3s ease;
@@ -155,9 +156,80 @@
             }
         }
 
+        /* Backdrop for image popup */
+        .image-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .popup-img {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 10px;
+        }
+
+        /* Dropdown and search bar container */
+        .search-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 600px;
+            margin: 20px 0;
+            gap: 10px;
+        }
+
+        select {
+            width: 80px; /* Set the dropdown to 80px */
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 2px solid #007BFF;
+            background-color: #fff;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        #search-bar {
+            width: calc(100% - 90px); /* Make the search bar take remaining space */
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 2px solid #007BFF;
+            background-color: #fff;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        /* Apply styles for the dropdown and search bar when space is tight */
+        @media (max-width: 768px) {
+            .search-container {
+                flex-direction: column;
+            }
+
+            select, #search-bar {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
     </style>
 </head>
 <body>
+
+    <!-- Search and Dropdown container -->
+    <div class="search-container">
+        <select id="cocktail-select">
+            <!-- Cocktail options will be populated here dynamically -->
+        </select>
+        <input type="text" id="search-bar" placeholder="Search cocktails...">
+    </div>
 
     <div class="cocktail-container">
         <div class="cocktail-header">
@@ -181,6 +253,11 @@
         </div>
     </div>
 
+    <!-- Image Popup -->
+    <div id="image-popup" class="image-popup">
+        <img id="popup-img" class="popup-img" src="" alt="Popup Image">
+    </div>
+
     <script>
         var cocktails = [
             {
@@ -198,69 +275,128 @@
                     "Add the gin and toppings",
                     "Serve the tonic separately"
                 ]
+            },
+            {
+                name: "Margarita",
+                img: "pics/cocktailmargarita.jpg",
+                tools: [
+                    { name: "Tequila", image: "pics/tequila.jpg" },
+                    { name: "Lime", image: "pics/lime.jpg" },
+                    { name: "Salt", image: "pics/salt.jpg" }
+                ],
+                ingredients: ["Tequila", "Lime", "Salt"],
+                toppings: ["Salt on rim", "Lime wedge"],
+                preparation: [
+                    "Rub lime around the glass rim and dip in salt",
+                    "Add tequila and lime juice to a shaker",
+                    "Shake and pour into glass"
+                ]
             }
         ];
 
-        const cocktail = cocktails[0];
+        // Populate the dropdown menu with cocktail names
+        const cocktailSelect = document.getElementById('cocktail-select');
+        cocktails.forEach((cocktail, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.innerText = cocktail.name;
+            cocktailSelect.appendChild(option);
+        });
 
-        // Display cocktail name and image
-        document.getElementById('cocktail-name').innerText = cocktail.name;
-        document.getElementById('cocktail-image').src = cocktail.img;
+        // Function to display a cocktail
+        function displayCocktail(cocktail) {
+            document.getElementById('cocktail-name').innerText = cocktail.name;
+            document.getElementById('cocktail-image').src = cocktail.img;
+
+            // Display ingredients
+            const ingredientsList = document.getElementById('ingredients-list');
+            ingredientsList.innerHTML = '';
+            cocktail.ingredients.forEach(ingredient => {
+                const li = document.createElement('li');
+                li.innerHTML = createClickableToolLink(ingredient);
+                ingredientsList.appendChild(li);
+            });
+
+            // Display toppings
+            const toppingsList = document.getElementById('toppings-list');
+            toppingsList.innerHTML = '';
+            cocktail.toppings.forEach(topping => {
+                const li = document.createElement('li');
+                li.innerHTML = createClickableToolLink(topping);
+                toppingsList.appendChild(li);
+            });
+
+            // Display preparation steps
+            const preparationList = document.getElementById('preparation-list');
+            preparationList.innerHTML = '';
+            cocktail.preparation.forEach(step => {
+                const li = document.createElement('li');
+                li.innerHTML = createClickableToolLink(step);
+                preparationList.appendChild(li);
+            });
+        }
 
         // Utility function to replace tool names with clickable links
         function createClickableToolLink(text) {
-            cocktail.tools.forEach(tool => {
-                const toolName = tool.name;
-                const toolImage = tool.image;
+            cocktails.forEach(cocktail => {
+                cocktail.tools.forEach(tool => {
+                    const toolName = tool.name;
+                    const toolImage = tool.image;
 
-                if (text.includes(toolName)) {
-                    text = text.replace(new RegExp(toolName, 'g'), `<a href="#" onclick="toggleImageVisibility('${toolName}')">${toolName}</a>`);
-                }
+                    if (text.includes(toolName)) {
+                        text = text.replace(new RegExp(toolName, 'g'), `<a href="#" onclick="showImagePopup('${toolImage}')">${toolName}</a>`);
+                    }
+                });
             });
             return text;
         }
 
-        // Toggle visibility of images when tool is clicked
-        function toggleImageVisibility(toolName) {
-            const imageElement = document.getElementById(toolName);
-            imageElement.style.display = imageElement.style.display === "none" ? "block" : "none";
+        // Handle image popup functionality
+        function showImagePopup(imageSrc) {
+            const popup = document.getElementById('image-popup');
+            const popupImg = document.getElementById('popup-img');
+            popup.style.display = "flex";
+            popupImg.src = imageSrc;
         }
 
-        // Display ingredients
-        const ingredientsList = document.getElementById('ingredients-list');
-        cocktail.ingredients.forEach(ingredient => {
-            const li = document.createElement('li');
-            li.innerHTML = createClickableToolLink(ingredient);
-            ingredientsList.appendChild(li);
+        // Event listener to close the popup if clicked outside the image
+        document.getElementById('image-popup').addEventListener('click', function(event) {
+            if (event.target === this) {
+                this.style.display = "none";  // Hide the popup
+            }
         });
 
-        // Display toppings
-        const toppingsList = document.getElementById('toppings-list');
-        cocktail.toppings.forEach(topping => {
-            const li = document.createElement('li');
-            li.innerHTML = createClickableToolLink(topping);
-            toppingsList.appendChild(li);
+        // Initialize the page with the first cocktail
+        displayCocktail(cocktails[0]);
+
+        // Update the displayed cocktail when a new one is selected
+        cocktailSelect.addEventListener('change', function() {
+            const selectedCocktail = cocktails[this.value];
+            displayCocktail(selectedCocktail);
         });
 
-        // Display preparation steps
-        const preparationList = document.getElementById('preparation-list');
-        cocktail.preparation.forEach(step => {
-            const li = document.createElement('li');
-            li.innerHTML = createClickableToolLink(step);
-            preparationList.appendChild(li);
+        // Search functionality to filter cocktails
+        document.getElementById('search-bar').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const filteredCocktails = cocktails.filter(cocktail => cocktail.name.toLowerCase().includes(searchTerm));
+
+            // Update dropdown based on the search result
+            cocktailSelect.innerHTML = '';
+            filteredCocktails.forEach((cocktail, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.innerText = cocktail.name;
+                cocktailSelect.appendChild(option);
+            });
+
+            // Display the first cocktail if any match
+            if (filteredCocktails.length > 0) {
+                displayCocktail(filteredCocktails[0]);
+            } else {
+                displayCocktail({ name: "No cocktails found", ingredients: [], toppings: [], preparation: [] });
+            }
         });
 
-        // Display images for tools (Initially hidden)
-        const tools = cocktail.tools;
-        tools.forEach(tool => {
-            const imgElement = document.createElement('img');
-            imgElement.id = tool.name;
-            imgElement.src = tool.image;
-            imgElement.alt = tool.name;
-            imgElement.style.display = "none";  // Initially hidden
-            imgElement.classList.add('tools');
-            document.body.appendChild(imgElement);
-        });
     </script>
 
 </body>
