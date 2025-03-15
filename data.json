@@ -1,0 +1,14 @@
+var cocktails = [
+    {
+        name: "bombay",
+        img: "pics/cocktailbombay.jpg"
+        tools: [
+            {name: "bombay gin", image: "pics/bombay.jpg"},
+            {name: "Indian tonix", image: "pics/indiantonic.jpg"},
+            {name: "ginglas", image: "pics/ginglass.jpg"}
+            ],
+        ingreditents: ["@(bombay gin)", "@(Indian tonix)"],
+        topings: ["@(ginglas), 3 partjes limoen"],
+        bereiding: ["gin glas half vvullen met ijs", "gin toevoegen en toppings toevoegen", "tonix apart bijgeven"]
+    }
+]

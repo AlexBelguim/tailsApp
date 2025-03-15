@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cocktail Recipe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .cocktail-container {
+            background-color: #fff;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .cocktail-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #007BFF;
+            color: #fff;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .cocktail-header img {
+            width: 100%;
+            height: auto;
+            max-width: 250px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .cocktail-header h1 {
+            font-size: 2rem;
+            margin-top: 15px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .section {
+            padding: 15px;
+        }
+
+        .section h2 {
+            font-size: 1.3rem;
+            color: #333;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #007BFF;
+            padding-bottom: 5px;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        li {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 10px;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        li a {
+            color: #007BFF;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        li a:hover {
+            text-decoration: underline;
+        }
+
+        li a::after {
+            content: " ↕";
+            position: absolute;
+            right: 0;
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        li a:hover::after {
+            transform: rotate(180deg);
+        }
+
+        .tools img {
+            display: none;
+            max-width: 80px;
+            border-radius: 8px;
+            margin-top: 5px;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Mobile-first styling */
+        @media (min-width: 768px) {
+            .cocktail-container {
+                max-width: 700px;
+            }
+
+            .cocktail-header {
+                flex-direction: row;
+                justify-content: flex-start;
+                align-items: center;
+            }
+
+            .cocktail-header img {
+                max-width: 200px;
+                margin-right: 20px;
+            }
+
+            .cocktail-header h1 {
+                font-size: 2.5rem;
+                margin-top: 0;
+            }
+
+            .section h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .cocktail-container {
+                max-width: 800px;
+            }
+
+            .cocktail-header h1 {
+                font-size: 3rem;
+            }
+
+            .section h2 {
+                font-size: 1.7rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="cocktail-container">
+        <div class="cocktail-header">
+            <img id="cocktail-image" src="" alt="Cocktail Image">
+            <h1 id="cocktail-name"></h1>
+        </div>
+
+        <div class="section ingredients">
+            <h2>Ingredients</h2>
+            <ul id="ingredients-list"></ul>
+        </div>
+
+        <div class="section toppings">
+            <h2>Toppings</h2>
+            <ul id="toppings-list"></ul>
+        </div>
+
+        <div class="section preparation">
+            <h2>Preparation</h2>
+            <ul id="preparation-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        var cocktails = [
+            {
+                name: "Bombay",
+                img: "pics/cocktailbombay.jpg",
+                tools: [
+                    { name: "Bombay Gin", image: "pics/bombay.jpg" },
+                    { name: "Indian Tonic", image: "pics/indiantonic.jpg" },
+                    { name: "Gin Glass", image: "pics/ginglass.jpg" }
+                ],
+                ingredients: ["Bombay Gin", "Indian Tonic"],
+                toppings: ["Gin Glass", "3 Partjes Limoen"],
+                preparation: [
+                    "Fill the gin glass halfway with ice",
+                    "Add the gin and toppings",
+                    "Serve the tonic separately"
+                ]
+            }
+        ];
+
+        const cocktail = cocktails[0];
+
+        // Display cocktail name and image
+        document.getElementById('cocktail-name').innerText = cocktail.name;
+        document.getElementById('cocktail-image').src = cocktail.img;
+
+        // Utility function to replace tool names with clickable links
+        function createClickableToolLink(text) {
+            cocktail.tools.forEach(tool => {
+                const toolName = tool.name;
+                const toolImage = tool.image;
+
+                if (text.includes(toolName)) {
+                    text = text.replace(new RegExp(toolName, 'g'), `<a href="#" onclick="toggleImageVisibility('${toolName}')">${toolName}</a>`);
+                }
+            });
+            return text;
+        }
+
+        // Toggle visibility of images when tool is clicked
+        function toggleImageVisibility(toolName) {
+            const imageElement = document.getElementById(toolName);
+            imageElement.style.display = imageElement.style.display === "none" ? "block" : "none";
+        }
+
+        // Display ingredients
+        const ingredientsList = document.getElementById('ingredients-list');
+        cocktail.ingredients.forEach(ingredient => {
+            const li = document.createElement('li');
+            li.innerHTML = createClickableToolLink(ingredient);
+            ingredientsList.appendChild(li);
+        });
+
+        // Display toppings
+        const toppingsList = document.getElementById('toppings-list');
+        cocktail.toppings.forEach(topping => {
+            const li = document.createElement('li');
+            li.innerHTML = createClickableToolLink(topping);
+            toppingsList.appendChild(li);
+        });
+
+        // Display preparation steps
+        const preparationList = document.getElementById('preparation-list');
+        cocktail.preparation.forEach(step => {
+            const li = document.createElement('li');
+            li.innerHTML = createClickableToolLink(step);
+            preparationList.appendChild(li);
+        });
+
+        // Display images for tools (Initially hidden)
+        const tools = cocktail.tools;
+        tools.forEach(tool => {
+            const imgElement = document.createElement('img');
+            imgElement.id = tool.name;
+            imgElement.src = tool.image;
+            imgElement.alt = tool.name;
+            imgElement.style.display = "none";  // Initially hidden
+            imgElement.classList.add('tools');
+            document.body.appendChild(imgElement);
+        });
+    </script>
+
+</body>
+</html>
